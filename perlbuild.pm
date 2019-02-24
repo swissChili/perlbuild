@@ -1,5 +1,22 @@
 package Gcc;
 
+
+=pod 
+
+=head1 TITLE
+
+perlbuild
+
+=head1 DESCRIPTION
+
+A generic build tool written in perl
+
+=head2 USAGE
+
+=cut
+
+
+
 use File::stat;
 use FileHandle;
 
@@ -44,13 +61,43 @@ sub target_younger{
 
 # Class Methods
 
+=pod
+
+=over
+
+=item gfc->new(source)
+
+This function creates a new instance of the GCC Builder class.
+The returned instance has several methods useful for compiling
+generic programs. Source is used as an initial source file
+
+=back
+
+=cut
+
 sub new{
     my ($class, $files) = @_;
     my $self = bless {
         sources => $files,
-        links => ""
+        links => "",
+        compiler => 'gcc'
     }, $class;
 }
+
+=pod
+
+=over
+
+=item gfc->link(library)
+
+Adds a dynamic library to the list of libs to link. This,
+like all methods in perlbuild does not actually build when
+it is called, but rather set up parameters for a build method
+to use later. See "static" or "build" for more info.
+
+=back
+
+=cut
 
 sub link{
     my ($self, $lib) = @_;
@@ -69,11 +116,12 @@ sub from{
 # Builds a static lib from an object
 sub static{
     my ($self, $target) = @_;
+    my $cc = $self->{compiler};
     my $younger = target_younger($target, $self->{sources});
     if($younger) {
         debug_info "Target built more recently than sources were updated.";
     } else {
-        my $cmd = "gcc -c -o .build/$target.o $self->{sources} $self->{links}";
+        my $cmd = "$cc -c -o .build/$target.o $self->{sources} $self->{links}";
         debug_cmd $cmd;
         system $cmd;
 
@@ -86,11 +134,12 @@ sub static{
 
 sub build{
     my ($self, $target) = @_;
+    my $cc = $self->{compiler};
     my $younger = target_younger($target, $self->{sources});
     if($younger) {
         debug_info "Target built more recently than sources were updated.";
     } else {
-        my $cmd = "gcc -o .build/$target $self->{sources} $self->{links}";
+        my $cmd = "$cc -o .build/$target $self->{sources} $self->{links}";
         debug_cmd $cmd;
         system($cmd);
     }

@@ -1,0 +1,45 @@
+\input texinfo
+@setfilename perlbuild.info
+
+@documentencoding utf-8
+
+@node Top
+@node TITLE
+@chapter TITLE
+
+perlbuild
+
+@node DESCRIPTION
+@chapter DESCRIPTION
+
+A generic build tool written in perl
+
+@menu
+* USAGE::
+@end menu
+
+@node USAGE
+@section USAGE
+
+@table @asis
+@item gfc->new(source)
+@anchor{gfc->new(source)}
+
+This function creates a new instance of the GCC Builder class.
+The returned instance has several methods useful for compiling
+generic programs. Source is used as an initial source file
+
+@end table
+
+@table @asis
+@item gfc->link(library)
+@anchor{gfc->link(library)}
+
+Adds a dynamic library to the list of libs to link. This,
+like all methods in perlbuild does not actually build when
+it is called, but rather set up parameters for a build method
+to use later. See "static" or "build" for more info.
+
+@end table
+
+@bye

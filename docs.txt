@@ -1,0 +1,18 @@
+TITLE
+    perlbuild
+
+DESCRIPTION
+    A generic build tool written in perl
+
+  USAGE
+    gfc->new(source)
+        This function creates a new instance of the GCC Builder class. The
+        returned instance has several methods useful for compiling generic
+        programs. Source is used as an initial source file
+
+    gfc->link(library)
+        Adds a dynamic library to the list of libs to link. This, like all
+        methods in perlbuild does not actually build when it is called, but
+        rather set up parameters for a build method to use later. See
+        "static" or "build" for more info.
+

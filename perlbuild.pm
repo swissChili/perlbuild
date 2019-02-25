@@ -3,33 +3,42 @@ package Builder;
 
 =pod 
 
-=head1 TITLE
+=head1 title
 
 perlbuild
 
-=head1 DESCRIPTION
+=head1 description
 
 A generic build tool written in perl
 
-=head2 EXAMPLE
+=head2 example
 
-This is an example of a simple build configuration:
+This is an example of a build configuration utilizing both
+the features of the Runner and Builder classes:
 
     require './perlbuild.pm';
 
     my $gcc = Builder->new('gcc');
+    my $run = Runner->new();
 
-    my $static =
-        $gcc->from("static.c")
-            ->static("static");
+    $run->task('main', sub{
+        my $static = $run->call('static');
 
-    $gcc->from("main.c")
-        ->from($static)
-        ->indirect("header.h")
-        ->build("main");
+        $gcc->from("main.c")
+            ->from($static)
+            ->indirect("header.h")
+            ->build("main");
+    });
+
+    $run->task('static', sub{
+        $gcc->from("static.c")->static("static");
+    });
+
+    $run->run();
 
 
-=head2 USAGE
+
+=head2 builder class
 
 =cut
 
@@ -226,6 +235,82 @@ sub build{
         system($cmd);
     }
     return $target;
+}
+
+1;
+
+=pod
+
+=head2 runner class
+
+The runner class provides an added layer of abstraction. Instead of simply
+executing some instructions for the builder as soon as the build script is
+run, the runner can be used to set specific tasks which can be executed
+either via command line arguments, or through the 'call' method.
+
+=cut
+
+package Runner;
+
+=pod
+
+=over
+
+=item Runner->new()
+
+Creates a new Runner. Takes no arguments
+
+=back
+
+=cut
+
+sub new{
+    my ($class) = @_;
+    my $self = bless {}, $class;
+}
+
+=pod
+
+=over
+
+=item runner->task(command, callback)
+
+Adds a task that responds to a command and calls a subroutine. The data
+returned from the subroutine is returned only when it is called from
+within the build script.
+
+=back
+
+=cut
+
+sub task{
+    my ($self, $task, $proc) = @_;
+    $self->{$task} = $proc;
+    return $self;
+}
+
+sub run{
+    my $self = shift;
+    my $task = $ARGV[0] || 'main';
+    return $self->{$task}->();
+}
+
+=pod
+
+=over
+
+=item runner->call(command)
+
+Call a task from within a build script. Returns whatever the subroutine
+returns. Useful for incremental building steps and returning builders.
+
+=back
+
+=cut
+
+sub call{
+    my ($self, $t) = @_;
+    return $self->{$t}->();
 }
 
 1;

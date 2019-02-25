@@ -1,27 +1,34 @@
-TITLE
+title
     perlbuild
 
-DESCRIPTION
+description
     A generic build tool written in perl
 
-  EXAMPLE
-    This is an example of a simple build configuration:
+  example
+    This is an example of a build configuration utilizing both the features
+    of the Runner and Builder classes:
 
         require './perlbuild.pm';
 
-        my $static =
-            Builder
-                ->new("gcc")
-                ->from("static.c")
-                ->static("static");
+        my $gcc = Builder->new('gcc');
+        my $run = Runner->new();
 
-        Builder
-            ->new("gcc")
-            ->from("main.c")
-            ->from($static)
-            ->build("main");
+        $run->task('main', sub{
+            my $static = $run->call('static');
 
-  USAGE
+            $gcc->from("main.c")
+                ->from($static)
+                ->indirect("header.h")
+                ->build("main");
+        });
+
+        $run->task('static', sub{
+            $gcc->from("static.c")->static("static");
+        });
+
+        $run->run();
+
+  builder class
     Builder->new(source)
         This function creates a new instance of the GCC Builder class. The
         returned instance has several methods useful for compiling generic
@@ -52,4 +59,24 @@ DESCRIPTION
     builder->build(target)
         Compiles the sources to a binary target. Links static and dynamic
         libraries. Returns the path to the generated binary
+
+  runner class
+    The runner class provides an added layer of abstraction. Instead of
+    simply executing some instructions for the builder as soon as the build
+    script is run, the runner can be used to set specific tasks which can be
+    executed either via command line arguments, or through the 'call'
+    method.
+
+    Runner->new()
+        Creates a new Runner. Takes no arguments
+
+    runner->task(command, callback)
+        Adds a task that responds to a command and calls a subroutine. The
+        data returned from the subroutine is returned only when it is called
+        from within the build script.
+
+    runner->call(command)
+        Call a task from within a build script. Returns whatever the
+        subroutine returns. Useful for incremental building steps and
+        returning builders.
 

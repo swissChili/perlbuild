@@ -4,15 +4,47 @@ TITLE
 DESCRIPTION
     A generic build tool written in perl
 
+  EXAMPLE
+    This is an example of a simple build configuration
+
+        require './perlbuild.pm';
+
+        my $static =
+            Builder
+                ->new("gcc")
+                ->from("static.c")
+                ->static("static");
+
+        Builder
+            ->new("gcc")
+            ->from("main.c")
+            ->from($static)
+            ->build("main");
+
   USAGE
-    gfc->new(source)
+    Builder->new(source)
         This function creates a new instance of the GCC Builder class. The
         returned instance has several methods useful for compiling generic
         programs. Source is used as an initial source file
 
-    gfc->link(library)
+    builder->link(library)
         Adds a dynamic library to the list of libs to link. This, like all
         methods in perlbuild does not actually build when it is called, but
         rather set up parameters for a build method to use later. See
         "static" or "build" for more info.
+
+    builder->from(source)
+        Add a source to the builder. Can be either a source file or a static
+        library. Can receive the return from the builder->static method as
+        an argument to use that generated library.
+
+    builder->static(target)
+        Compile the sources to a static library to be linked either with
+        builder->from or manually. Returns the relative path to the lib
+        including the build dir so it can be passed directly to another
+        builder as a source.
+
+    builder->build(target)
+        Compiles the sources to a binary target. Links static and dynamic
+        libraries. Returns the path to the generated binary
 

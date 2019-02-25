@@ -5,16 +5,18 @@ A general purpose build tool in Perl.
 Example:
 
 ```perl
-#!/usr/bin/env perl
 # build.pl
-
 require './perlbuild.pm';
 
 my $static =
-    Gcc ->new("static.c")
+    Builder
+        ->new("gcc")
+        ->from("static.c")
         ->static("static");
 
-Gcc ->new("main.c")
+Builder
+    ->new("gcc")
+    ->from("main.c")
     ->from($static)
     ->build("main");
 ```

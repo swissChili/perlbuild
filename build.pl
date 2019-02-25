@@ -1,14 +1,13 @@
 #!/usr/bin/env perl
 require './perlbuild.pm';
 
+my $gcc = Builder->new('gcc');
+
 my $static =
-    Builder
-        ->new("gcc")
-        ->from("static.c")
+    $gcc->from("static.c")
         ->static("static");
 
-Builder
-    ->new("gcc")
-    ->from("main.c")
+$gcc->from("main.c")
     ->from($static)
+    ->indirect("header.h")
     ->build("main");

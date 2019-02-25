@@ -8,16 +8,15 @@ Example:
 # build.pl
 require './perlbuild.pm';
 
+my $gcc = Builder->new('gcc');
+
 my $static =
-    Builder
-        ->new("gcc")
-        ->from("static.c")
+    $gcc->from("static.c")
         ->static("static");
 
-Builder
-    ->new("gcc")
-    ->from("main.c")
+$gcc->from("main.c")
     ->from($static)
+    ->indirect("header.h")
     ->build("main");
 ```
 
@@ -31,4 +30,4 @@ $ pod2man perlbuild.pm
 ```
 
 The output is printed to stdout and can be piped into a file to be used
-later.
+later. Up-to-date documentation is available in `docs.txt`.

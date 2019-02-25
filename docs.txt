@@ -5,7 +5,7 @@ DESCRIPTION
     A generic build tool written in perl
 
   EXAMPLE
-    This is an example of a simple build configuration
+    This is an example of a simple build configuration:
 
         require './perlbuild.pm';
 
@@ -37,6 +37,11 @@ DESCRIPTION
         Add a source to the builder. Can be either a source file or a static
         library. Can receive the return from the builder->static method as
         an argument to use that generated library.
+
+    builder->indirect(source)
+        Adds an indirect sources -- one that is watched for changes, but not
+        directly given to the compiler. Useful for watching header files and
+        other imports for changes.
 
     builder->static(target)
         Compile the sources to a static library to be linked either with

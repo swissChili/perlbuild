@@ -17,17 +17,17 @@ This is an example of a simple build configuration:
 
     require './perlbuild.pm';
 
+    my $gcc = Builder->new('gcc');
+
     my $static =
-        Builder
-            ->new("gcc")
-            ->from("static.c")
+        $gcc->from("static.c")
             ->static("static");
 
-    Builder
-        ->new("gcc")
-        ->from("main.c")
+    $gcc->from("main.c")
         ->from($static)
+        ->indirect("header.h")
         ->build("main");
+
 
 =head2 USAGE
 
@@ -96,6 +96,7 @@ sub new{
     my $self = bless {
         sources => '',
         links => '',
+        indirect => '',
         compiler => "$c"
     }, $class;
 }
@@ -147,6 +148,26 @@ sub from{
 
 =over
 
+=item builder->indirect(source)
+
+Adds an indirect sources -- one that is watched for changes,
+but not directly given to the compiler. Useful for watching
+header files and other imports for changes.
+
+=back
+
+=cut
+
+sub indirect{
+    my ($self, $indirect) = @_;
+    $self->{indirect} = $self->{indirect} . " $indirect";
+    return $self;
+}
+
+=pod
+
+=over
+
 =item builder->static(target)
 
 Compile the sources to a static library to be linked either with
@@ -165,7 +186,7 @@ sub static{
     if(target_younger(".build/lib$target.a", $self->{sources})) {
         debug_info "Target built more recently than sources were updated.";
     } else {
-        if (target_younger(".build/$target.o", $self->{sources})) {
+        if (target_younger(".build/$target.o", $self->{sources} . $self->{indirect})) {
             debug_info "Target object built more recently than sources were updated";
         } else {
             my $cmd = "$cc -c -o .build/$target.o $self->{sources} $self->{links}";
@@ -196,7 +217,7 @@ sub build{
     my ($self, $target) = @_;
     system "mkdir -p .build";
     my $cc = $self->{compiler};
-    my $younger = target_younger(".build/$target", $self->{sources});
+    my $younger = target_younger(".build/$target", $self->{sources} . $self->{indirect});
     if($younger) {
         debug_info "Target built more recently than sources were updated.";
     } else {
